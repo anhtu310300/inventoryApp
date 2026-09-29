@@ -1,0 +1,135 @@
+<main class="login-page">
+  <div class="container-fluid h-100 p-0">
+    <div class="row g-0 h-100">
+      <section class="col-lg-6 d-none d-lg-flex brand-panel" aria-labelledby="brand-title">
+        <div class="brand-content">
+          <a class="brand d-inline-flex align-items-center gap-3 text-decoration-none" href="#" aria-label="Stockly - Home">
+            <span class="brand-mark" aria-hidden="true">
+              <svg viewBox="0 0 32 32" fill="none">
+                <path d="M7 10.5 16 5l9 5.5v11L16 27l-9-5.5v-11Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                <path d="m7.5 10.5 8.5 5 8.5-5M16 15.5V27" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                <path d="m11.5 8 9 5.5v4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            <span class="brand-name">Stockly</span>
+          </a>
+
+          <div class="brand-copy">
+            <span class="eyebrow">Smarter inventory management</span>
+            <h1 id="brand-title">Every item.<br>One clear view.</h1>
+            <p>Track stock, orders, and day-to-day operations accurately in real time.</p>
+          </div>
+
+          <div class="inventory-preview" aria-hidden="true">
+            <div class="preview-topbar">
+              <span class="preview-title">Inventory overview</span>
+              <span class="live-pill"><span></span> Live</span>
+            </div>
+            <div class="preview-grid">
+              <div class="preview-stat">
+                <span>Total products</span>
+                <strong>2,847</strong>
+                <small>+12.5% this month</small>
+              </div>
+              <div class="preview-stat">
+                <span>Inventory value</span>
+                <strong>₹1.24 Cr</strong>
+                <small>Fully synced</small>
+              </div>
+            </div>
+            <div class="preview-chart">
+              <div class="chart-labels"><span>Stock movement</span><strong>+24.8%</strong></div>
+              <svg viewBox="0 0 520 112" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#34d399" stop-opacity=".25"/>
+                    <stop offset="1" stop-color="#34d399" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+                <path class="chart-area" d="M0 96C38 92 54 61 90 70s54 19 88 3 43-51 82-40 50 49 88 34 46-43 82-37 53 31 90 9v73H0Z"/>
+                <path class="chart-line" d="M0 96C38 92 54 61 90 70s54 19 88 3 43-51 82-40 50 49 88 34 46-43 82-37 53 31 90 9"/>
+              </svg>
+            </div>
+          </div>
+
+          <p class="brand-footer">© 2026 Stockly. Clear operations, sustainable growth.</p>
+        </div>
+      </section>
+
+      <section class="col-lg-6 form-panel" aria-labelledby="login-title">
+        <div class="login-shell">
+          <a class="brand mobile-brand d-inline-flex d-lg-none align-items-center gap-2 text-decoration-none" href="#" aria-label="Stockly - Home">
+            <span class="brand-mark" aria-hidden="true">
+              <svg viewBox="0 0 32 32" fill="none">
+                <path d="M7 10.5 16 5l9 5.5v11L16 27l-9-5.5v-11Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                <path d="m7.5 10.5 8.5 5 8.5-5M16 15.5V27" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            <span class="brand-name">Stockly</span>
+          </a>
+
+          <div class="login-heading">
+            <span class="welcome-badge">Welcome back</span>
+            <h2 id="login-title">Sign in to your account</h2>
+            <p>Enter your details to continue managing your inventory.</p>
+          </div>
+
+          <form class="login-form" [formGroup]="loginForm" (ngSubmit)="login()">
+            <div class="mb-4">
+              <label for="email" class="form-label">Email</label>
+              <div class="input-wrap">
+                <svg class="field-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M4 6.5h16v11H4v-11Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                  <path d="m5 7.5 7 5 7-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <input id="email" type="email" class="form-control" formControlName="email" placeholder="name@company.com" autocomplete="email">
+              </div>
+              @if (loginForm.controls.email.touched && loginForm.controls.email.hasError('required')) {
+                <small class="text-danger">Email is required.</small>
+              }
+              @if (loginForm.controls.email.touched && loginForm.controls.email.hasError('email')) {
+                <small class="text-danger">Email is invalid.</small>
+              }
+            </div>
+
+            <div class="mb-3">
+              <label for="password" class="form-label">Password</label>
+              <div class="input-wrap">
+                <svg class="field-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <rect x="5" y="10" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.8"/>
+                  <path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                </svg>
+                <input id="password" type="password" class="form-control" formControlName="password" placeholder="Enter your password" autocomplete="current-password">
+              </div>
+              @if (loginForm.controls.password.touched && loginForm.controls.password.hasError('required')) {
+                <small class="text-danger">Password is required.</small>
+              }
+            </div>
+
+            <div class="d-flex align-items-center justify-content-between gap-3 mb-4">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="remember" formControlName="rememberMe">
+                <label class="form-check-label" for="remember">Remember me</label>
+              </div>
+              <a href="#" class="text-link">Forgot password?</a>
+            </div>
+
+            @if (loginError) {
+              <div class="alert alert-danger" role="alert">{{ loginError }}</div>
+            }
+
+            <button type="submit" class="btn btn-primary w-100 login-button" [disabled]="isSubmitting">
+              {{ isSubmitting ? 'Signing in...' : 'Sign in' }}
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M5 12h14m-5-5 5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </form>
+
+          <p class="help-text">Having trouble? <a href="#" class="text-link">Contact support</a></p>
+          <p class="mobile-copyright d-lg-none">© 2026 Stockly</p>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>

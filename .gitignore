@@ -1,0 +1,26 @@
+# Backend
+BE/bin/
+BE/obj/
+BE/.vs/
+BE/*.csproj.user
+
+# Frontend
+FE/node_modules/
+FE/dist/
+FE/.angular/
+FE/.git-backup/
+
+# Local files
+.chrome-preview-profile/
+.vscode/
+.idea/
+
+# Secrets
+.env
+.env.*
+!.env.example
+*.local.json
+
+# OS
+.DS_Store
+Thumbs.db
