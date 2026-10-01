@@ -15,6 +15,7 @@ FE/.agents/
 .chrome-preview-profile/
 .vscode/
 .idea/
+template.html
 
 # Secrets
 .env
