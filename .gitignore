@@ -9,6 +9,7 @@ FE/node_modules/
 FE/dist/
 FE/.angular/
 FE/.git-backup/
+FE/.agents/
 
 # Local files
 .chrome-preview-profile/
