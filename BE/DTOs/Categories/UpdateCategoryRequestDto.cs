@@ -1,0 +1,10 @@
+namespace Inventory.Api.DTOs.Categories;
+
+public class UpdateCategoryRequestDto
+{
+    public string Name { get; set; } = string.Empty;
+
+    public string? Description { get; set; }
+
+    public bool IsActive { get; set; }
+}

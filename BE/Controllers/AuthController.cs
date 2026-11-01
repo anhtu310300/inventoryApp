@@ -1,53 +1,71 @@
-﻿using Inventory.Api.DTOs;
+using FluentValidation;
+using Inventory.Api.Common.Responses;
+using Inventory.Api.DTOs.Auth;
 using Inventory.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Inventory.Api.Controllers
+namespace Inventory.Api.Controllers;
+
+[ApiController]
+[Route("api/auth")]
+public class AuthController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class AuthController : ControllerBase
+    private readonly IAuthService _authService;
+    private readonly IValidator<LoginRequestDto> _loginValidator;
+
+    public AuthController(
+        IAuthService authService,
+        IValidator<LoginRequestDto> loginValidator)
     {
-        private readonly IAuthService _authService;
+        _authService = authService;
+        _loginValidator = loginValidator;
+    }
 
-        public AuthController(IAuthService authService)
+    [HttpPost("login")]
+    public async Task<IActionResult> Login(
+        [FromBody] LoginRequestDto request)
+    {
+        var validationResult =
+            await _loginValidator.ValidateAsync(request);
+
+        if (!validationResult.IsValid)
         {
-            _authService = authService;
+            var messages = validationResult.Errors
+                .Select(error => error.ErrorMessage)
+                .Distinct()
+                .ToList();
+
+            return BadRequest(new ApiResponse<object?>
+            {
+                Data = null,
+                Messages = messages
+            });
         }
 
-        [HttpPost("register")]
-        public async Task<IActionResult> Register(RegisterRequestDto dto)
+        try
         {
-            var registered = await _authService.RegisterAsync(dto);
+            var loginResponse =
+                await _authService.LoginAsync(request);
 
-            if (!registered)
+            return Ok(new ApiResponse<LoginResponseDto>
             {
-                return Conflict(new
+                Data = loginResponse,
+                Messages = new List<string>
                 {
-                    message = "Email này đã được sử dụng."
-                });
-            }
-
-            return StatusCode(
-                StatusCodes.Status201Created,
-                new { message = "Đăng ký tài khoản thành công." }
-            );
+                    "Login successful."
+                }
+            });
         }
-
-        [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginRequestDto dto)
+        catch (UnauthorizedAccessException exception)
         {
-            var result = await _authService.LoginAsync(dto);
-
-            if (result == null)
+            return Unauthorized(new ApiResponse<object?>
             {
-                return Unauthorized(new
+                Data = null,
+                Messages = new List<string>
                 {
-                    message = "Email hoặc mật khẩu không chính xác."
-                });
-            }
-
-            return Ok(result);
+                    exception.Message
+                }
+            });
         }
     }
 }

@@ -1,12 +1,19 @@
-﻿using Inventory.Api.DTOs;
+using Inventory.Api.DTOs.Employees;
 
 namespace Inventory.Api.Services.Interfaces;
 
 public interface IEmployeeService
 {
-    Task<List<EmployeeDto>> GetAllAsync();
-    Task<EmployeeDto?> GetByIdAsync(int id);
-    Task<EmployeeDto> CreateAsync(CreateEmployeeDto dto);
-    Task<EmployeeDto?> UpdateAsync(int id, UpdateEmployeeDto dto);
-    Task<bool> DeleteAsync(int id);
+    Task<List<EmployeeResponseDto>> GetAllAsync();
+
+    Task<EmployeeResponseDto?> GetByIdAsync(int employeeId);
+
+    Task<EmployeeResponseDto> CreateAsync(
+        CreateEmployeeRequestDto request);
+
+    Task<EmployeeResponseDto?> UpdateAsync(
+        int employeeId,
+        UpdateEmployeeRequestDto request);
+
+    Task<bool> DeleteAsync(int employeeId);
 }

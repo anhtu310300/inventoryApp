@@ -1,94 +1,64 @@
-﻿using Inventory.Api.DTOs;
-using Inventory.Api.Entities;
+using AutoMapper;
+using Inventory.Api.Domain;
+using Inventory.Api.DTOs.Auth;
 using Inventory.Api.Repositories.Interfaces;
 using Inventory.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 
-namespace Inventory.Api.Services
+namespace Inventory.Api.Services;
+
+public class AuthService : IAuthService
 {
-    public class AuthService : IAuthService
+    private readonly IAuthRepository _authRepository;
+    private readonly IPasswordHasher<Employee> _passwordHasher;
+    private readonly IMapper _mapper;
+
+    public AuthService(
+        IAuthRepository authRepository,
+        IPasswordHasher<Employee> passwordHasher,
+        IMapper mapper)
     {
-        private readonly IUserRepository _userRepository;
-        private readonly IPasswordHasher<User> _passwordHasher;
-        private readonly ITokenService _tokenService;
+        _authRepository = authRepository;
+        _passwordHasher = passwordHasher;
+        _mapper = mapper;
+    }
 
-        public AuthService(
-            IUserRepository userRepository,
-            IPasswordHasher<User> passwordHasher,
-            ITokenService tokenService)
+    public async Task<LoginResponseDto> LoginAsync(
+        LoginRequestDto request)
+    {
+        var userName = request.UserName.Trim();
+
+        var employee =
+            await _authRepository.GetByUserNameAsync(userName);
+
+        if (employee is null ||
+            string.IsNullOrWhiteSpace(employee.PasswordHash))
         {
-            _userRepository = userRepository;
-            _passwordHasher = passwordHasher;
-            _tokenService = tokenService;
+            throw new UnauthorizedAccessException(
+                "Invalid username or password.");
         }
 
-        public async Task<bool> RegisterAsync(RegisterRequestDto dto)
+        var passwordResult =
+            _passwordHasher.VerifyHashedPassword(
+                employee,
+                employee.PasswordHash,
+                request.Password);
+
+        if (passwordResult == PasswordVerificationResult.Failed)
         {
-            var email = dto.Email.Trim();
-
-            if (await _userRepository.EmailExistsAsync(email))
-            {
-                return false;
-            }
-
-            var user = new User
-            {
-                EmployeeCode = $"EMP{Guid.NewGuid():N}"[..11].ToUpperInvariant(),
-                FullName = dto.FullName.Trim(),
-                Email = email,
-                Phone = dto.Phone?.Trim(),
-                Department = dto.Department.Trim(),
-                Role = "Employee",
-                Status = "Active",
-                CreatedAt = DateTime.UtcNow
-            };
-
-            user.PasswordHash = _passwordHasher.HashPassword(
-                user,
-                dto.Password
-            );
-
-            await _userRepository.CreateAsync(user);
-
-            return true;
+            throw new UnauthorizedAccessException(
+                "Invalid username or password.");
         }
 
-        public async Task<LoginResponseDto?> LoginAsync(LoginRequestDto dto)
+        if (!string.Equals(
+                employee.Status,
+                "Active",
+                StringComparison.OrdinalIgnoreCase))
         {
-            var email = dto.Email.Trim();
-            var user = await _userRepository.GetByEmailAsync(email);
-
-            if (user == null)
-            {
-                return null;
-            }
-            if(string.IsNullOrWhiteSpace(user.PasswordHash))
-            {
-                return null;
-            }
-            if (user.Status != "Active")
-            {
-                return null;
-            }
-            var passwordResult = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, dto.Password);
-            if (passwordResult == PasswordVerificationResult.Failed)
-            {
-                return null;
-            }
-            var token = _tokenService.CreateToken(user);
-
-            return new LoginResponseDto
-            {
-                AccessToken = token,
-                UserId = user.Id,
-                EmployeeCode = user.EmployeeCode,
-                FullName = user.FullName,
-                Email = user.Email,
-                Role = user.Role
-            };
-
+            throw new UnauthorizedAccessException(
+                "The account is inactive.");
         }
 
-    
+        return _mapper.Map<LoginResponseDto>(employee);
     }
 }

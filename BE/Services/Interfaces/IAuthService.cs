@@ -1,10 +1,8 @@
-﻿using Inventory.Api.DTOs;
+using Inventory.Api.DTOs.Auth;
 
-namespace Inventory.Api.Services.Interfaces
+namespace Inventory.Api.Services.Interfaces;
+
+public interface IAuthService
 {
-    public interface IAuthService
-    {
-        Task<bool> RegisterAsync(RegisterRequestDto dto);
-        Task<LoginResponseDto?> LoginAsync(LoginRequestDto dto);
-    }
+    Task<LoginResponseDto> LoginAsync(LoginRequestDto request);
 }

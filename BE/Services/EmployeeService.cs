@@ -1,119 +1,101 @@
-﻿using Inventory.Api.DTOs;
-using Inventory.Api.Entities;
+using AutoMapper;
+using Inventory.Api.Domain;
+using Inventory.Api.DTOs.Employees;
 using Inventory.Api.Repositories.Interfaces;
 using Inventory.Api.Services.Interfaces;
-
 using Microsoft.AspNetCore.Identity;
 
 namespace Inventory.Api.Services;
 
 public class EmployeeService : IEmployeeService
 {
-    private readonly IUserRepository _userRepository;
-    private readonly IPasswordHasher<User> _passwordHasher;
+    private readonly IEmployeeRepository _employeeRepository;
+    private readonly IPasswordHasher<Employee> _passwordHasher;
+    private readonly IMapper _mapper;
 
     public EmployeeService(
-        IUserRepository userRepository,
-        IPasswordHasher<User> passwordHasher)
+        IEmployeeRepository employeeRepository,
+        IPasswordHasher<Employee> passwordHasher,
+        IMapper mapper)
     {
-        _userRepository = userRepository;
+        _employeeRepository = employeeRepository;
         _passwordHasher = passwordHasher;
+        _mapper = mapper;
     }
 
-    public async Task<List<EmployeeDto>> GetAllAsync()
+    public async Task<List<EmployeeResponseDto>> GetAllAsync()
     {
-        var users = await _userRepository.GetAllAsync();
+        var employees = await _employeeRepository.GetAllAsync();
 
-        return users.Select(MapToDto).ToList();
+        return _mapper.Map<List<EmployeeResponseDto>>(employees);
     }
 
-    public async Task<EmployeeDto?> GetByIdAsync(int id)
+    public async Task<EmployeeResponseDto?> GetByIdAsync(
+        int employeeId)
     {
-        var user = await _userRepository.GetByIdAsync(id);
+        var employee =
+            await _employeeRepository.GetByIdAsync(employeeId);
 
-        if (user == null)
+        if (employee is null)
         {
             return null;
         }
 
-        return MapToDto(user);
+        return _mapper.Map<EmployeeResponseDto>(employee);
     }
 
-    public async Task<EmployeeDto> CreateAsync(CreateEmployeeDto dto)
+    public async Task<EmployeeResponseDto> CreateAsync(
+        CreateEmployeeRequestDto request)
     {
-        var user = new User
-        {
-            EmployeeCode = dto.EmployeeCode,
-            FullName = dto.FullName,
-            Email = dto.Email,
-            Phone = dto.Phone,
-            Department = dto.Department,
-            Role = dto.Role,
-            Status = dto.Status,
-            StartDate = dto.StartDate,
-            Notes = dto.Notes,
-            CreatedAt = DateTime.UtcNow
-        };
+        var employee = _mapper.Map<Employee>(request);
 
-        user.PasswordHash = _passwordHasher.HashPassword(
-            user,
-            dto.Password
-        );
+        employee.Status = "Active";
+        employee.CreatedAt = DateTime.UtcNow;
+        employee.UpdatedAt = DateTime.UtcNow;
 
-        var createdUser =
-            await _userRepository.CreateAsync(user);
+        employee.PasswordHash =
+            _passwordHasher.HashPassword(
+                employee,
+                request.Password);
 
-        return MapToDto(createdUser);
+        var createdEmployee =
+            await _employeeRepository.CreateAsync(employee);
+
+        return _mapper.Map<EmployeeResponseDto>(createdEmployee);
     }
 
-    public async Task<EmployeeDto?> UpdateAsync(
-        int id,
-        UpdateEmployeeDto dto)
+    public async Task<EmployeeResponseDto?> UpdateAsync(
+        int employeeId,
+        UpdateEmployeeRequestDto request)
     {
-        var user = new User
-        {
-            Id = id,
-            FullName = dto.FullName,
-            Email = dto.Email,
-            Phone = dto.Phone,
-            Department = dto.Department,
-            Role = dto.Role,
-            Status = dto.Status,
-            StartDate = dto.StartDate,
-            Notes = dto.Notes
-        };
+        var employee =
+            await _employeeRepository.GetByIdAsync(employeeId);
 
-        var updatedUser =
-            await _userRepository.UpdateAsync(user);
-
-        if (updatedUser == null)
+        if (employee is null)
         {
             return null;
         }
 
-        return MapToDto(updatedUser);
-    }
+        _mapper.Map(request, employee);
 
-    public async Task<bool> DeleteAsync(int id)
-    {
-        return await _userRepository.DeleteAsync(id);
-    }
-
-    private static EmployeeDto MapToDto(User user)
-    {
-        return new EmployeeDto
+        if (!string.IsNullOrWhiteSpace(request.Password))
         {
-            Id = user.Id,
-            EmployeeCode = user.EmployeeCode,
-            FullName = user.FullName,
-            Email = user.Email,
-            Phone = user.Phone,
-            Department = user.Department,
-            Role = user.Role,
-            Status = user.Status,
-            StartDate = user.StartDate,
-            Notes = user.Notes,
-            CreatedAt = user.CreatedAt
-        };
+            employee.PasswordHash =
+                _passwordHasher.HashPassword(
+                    employee,
+                    request.Password);
+        }
+
+        employee.UpdatedAt = DateTime.UtcNow;
+
+        var updatedEmployee =
+            await _employeeRepository.UpdateAsync(employee);
+
+        return _mapper.Map<EmployeeResponseDto>(updatedEmployee);
+    }
+
+    public async Task<bool> DeleteAsync(int employeeId)
+    {
+        return await _employeeRepository.DeleteAsync(employeeId);
     }
 }
